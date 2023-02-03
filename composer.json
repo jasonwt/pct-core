@@ -1,0 +1,23 @@
+
+{
+	"name": "pct/core",
+	"type": "library",
+	"license": "MIT",
+	"autoload": {
+		"psr-4": {
+			"pct\\core\\": "src/"
+		},
+		"files": [
+			"src/debugging/debugging.php"
+		]
+	},
+	"authors": [
+		{
+			"name": "Jason Thompson"
+		}        
+	],
+	"repositories": [
+	],
+	"require": {
+	}
+}
