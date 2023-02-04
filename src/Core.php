@@ -36,6 +36,34 @@
 			}
 		}
 
+		protected function ValidateAttributeValue($name, $value): bool {
+			return true;
+		}
+
+		/************************************ ArrayAccess Methods ************************************/
+
+		public function offsetExists(mixed $offset): bool { 
+			return array_key_exists($offset, $this->attributes);
+		}
+
+		public function offsetGet(mixed $offset): mixed { 
+			return $this->attributes[$offset];
+		}
+
+		public function offsetSet($offset, $value): void { 
+			if (!$this->ValidateAttributeValue($offset, $value))
+				$this->errorHandler->RegisterError("Invalid attribute value for $offset");
+			else
+				$this->attributes[$offset] = $value;
+		}
+
+		public function offsetUnset(mixed $offset): void { 
+			if (!isset($this->attributes[$offset]))
+				$this->errorHandler->RegisterError("attribute '$offset' is not set");
+			else
+				unset($this->attributes[$offset]);
+		}
+
 		/************************************ PUBLIC PROPERTIES GET/SET ************************************/
 
 		public function GetParent() : ?IComponent {

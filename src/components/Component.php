@@ -39,7 +39,39 @@
 			}
 		}
 
+		
+
+		public function ValidateComponentValue(string $name, $value): bool {
+			return true;
+		}
+
+		
+
 		/************************************ PUBLIC PROPERTIES GET/SET ************************************/
+
+		public function __set($name, $value) {
+			if (!isset($this->components[$name])) {
+				$this->errorHandler->RegisterError("Component '$name' does not exist.");
+				return null;
+			}
+
+			return $this->components[$name]->SetValue($value);
+		}
+
+		public function &__get($name) {
+			echo "calling_get\n";
+			if (!isset($this->components[$name])) {
+				$n = null;
+				$this->errorHandler->RegisterError("Component '$name' does not exist.");
+				return $n;
+			}
+
+			return $this->components[$name]->value;
+		}
+
+		public function __isset($name) {
+			return isset($this->components[$name]);
+		}
 
 		public function GetValue() {
 			return $this->value;
@@ -62,11 +94,14 @@
 				if (!$this->VerifyCoreName($name = trim($component->GetName())))
 					$this->errorHandler->RegisterError("Invalid Component Name '$name'", IErrorHandler::TYPE_ERROR);
 
+				if (property_exists($this, $name))
+					$this->errorHandler->RegisterError("A property with the name '$name' already exists", IErrorHandler::TYPE_WARNING);
+
 				if (array_key_exists($name, $this->components))
-					$this->errorHandler->RegisterError("Component with name '$name' already exists", IErrorHandler::TYPE_WARNING);
+					$this->errorHandler->RegisterError("A Component with the name '$name' already exists", IErrorHandler::TYPE_WARNING);
 
 				if ($component->GetParent() != "")
-					$this->errorHandler->RegisterError("Component '$name' is already registered with parent '" . $component->GetParent()->GetName() . "'", IErrorHandler::TYPE_WARNING);
+					$this->errorHandler->RegisterError("A Component with the name '$name' is already registered with parent '" . $component->GetParent()->GetName() . "'", IErrorHandler::TYPE_WARNING);
 
 				$component->parent = $this;
 				$this->components[$component->GetName()] = $component;
