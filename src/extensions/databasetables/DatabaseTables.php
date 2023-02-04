@@ -24,16 +24,16 @@
 
 				$tableNamesAttribute[] = $tableName;
 
-				$this->RegisterAttribute($tableName, [
+				$this[$tableName] = [
 					"primaryKey" => "",
 					"indexKeys" => [],
 					"uniqueKeys" => [],
 					"autoIncrementingKeys" => "",
 					"fields" => []
-				]);				
+				];				
 			}
 
-			$this->SetAttributeValue("tables", $tableNamesAttribute);
+			$this["tables"] = $tableNamesAttribute;			
 		}
 
 		function GetRequiredExtensions() : array {
@@ -44,10 +44,10 @@
 			if (!parent::RegisterCallback())
 				return false;
 
-			foreach ($this->GetAttributeValue("tables") as $tableName) {
+			foreach ($this["tables"] as $tableName) {
 				$queryResults = $this->GetParent()->Query("DESCRIBE $tableName");
 
-				$attributeValue = $this->GetAttributeValue($tableName);
+				$attributeValue = $this[$tableName];
 
 				while ($row = $queryResults->FetchRow()) {
 					list ($fieldName, $fieldType, $fieldNull, $fieldKey, $fieldDefault, $fieldExtra) = $row;			
@@ -90,7 +90,8 @@
 							$attributeValue["autoIncrementingKeys"] = $fieldName;
 					}
 
-					$this->SetAttributeValue($tableName, $attributeValue);
+					$this[$tableName] = $attributeValue;
+					
 
 					$this->GetParent()->RegisterComponent($tableName . "_" . $fieldName);
 				}

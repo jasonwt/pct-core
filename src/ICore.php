@@ -7,10 +7,10 @@
     ini_set('display_errors', '1');
 
 	use ArrayAccess;
+	use Iterator;
 	use pct\core\components\IComponent;
 
-	interface ICore extends ArrayAccess {
-
+	interface ICore extends ArrayAccess, Iterator {
 		/************************************ GET PROPERTIES ************************************/
 
 		public function GetParent() : ?IComponent;
@@ -25,12 +25,7 @@
 
 		/************************************ ATTRIBUTES ************************************/
 
-		public function RegisterAttribute(string $name, $defaultValue) : bool;
-		public function UnregisterAttribute(string $name) : bool;
-		public function AttributeExists(string $name) : bool;
-		public function SetAttributeValue(string $name, $value) : bool;
 		public function SetAttributeValues(array $values) : bool;
-		public function GetAttributeValue(string $name);
 		public function GetAttributes() : array;
 
 		/************************************ MAGIC ************************************/

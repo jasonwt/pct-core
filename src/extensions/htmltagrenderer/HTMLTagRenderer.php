@@ -88,7 +88,9 @@
 			if ($attributeValueType != $validTagAttributeType)
 				throw new \Exception("Tag attribute '$tagAttributeName' type '$attributeValueType' mismatch for '" . get_class($this) . "'.  Expected type '$validTagAttributeType'");
 
-			return parent::SetAttributeValue($tagAttributeName, $tagAttributeValue);
+			$this[$tagAttributeName] = $tagAttributeValue;
+
+			return true;			
 		}
 
 		public function RenderClosingTag() {			

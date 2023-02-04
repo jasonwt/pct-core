@@ -1,4 +1,5 @@
 <?php	
+// https://stitcher.io/blog/dealing-with-deprecations
     declare(strict_types=1);
 
 	namespace pct\core\components;
@@ -6,11 +7,14 @@
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 
+	
+
 	use pct\core\Core;
 	use pct\core\components\IComponent;
 	use pct\core\extensions\IExtension;
 	use pct\core\errorhandlers\IErrorHandler;
 
+	
 	class Component extends Core implements IComponent {
 		protected $value = null;
 
@@ -41,11 +45,9 @@
 
 		
 
-		public function ValidateComponentValue(string $name, $value): bool {
+		protected function ValidateComponentValue(string $name, $value): bool {
 			return true;
 		}
-
-		
 
 		/************************************ PUBLIC PROPERTIES GET/SET ************************************/
 

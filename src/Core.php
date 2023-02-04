@@ -12,6 +12,8 @@
 	use pct\core\components\IComponent;
 
 	abstract class Core implements ICore {
+		private $iteratorPosition = 0;
+
 		protected ?IComponent $parent = null;
 		protected string $name = "";
 		protected string $version = "";
@@ -28,12 +30,22 @@
 
 			if (count($attributes) > 0) {
 				foreach ($attributes as $k => $v) {
-					if(array_keys($attributes) !== range(0, count($attributes) - 1)) 
-						$this->RegisterAttribute($k, $v);
+					if(array_keys($attributes) !== range(0, count($attributes) - 1))
+						$this[$k] = $v;
 					else
-						$this->RegisterAttribute($v, null);
+						$this[$v] = null;
 				}
 			}
+		}
+
+		/************************************ PROTECTED VERIFIES ************************************/
+
+		protected function VerifyCoreName($name) : bool {
+			return trim($name) != "";
+		}
+
+		protected function VerifyAttributeName($name) : bool {
+			return trim($name) != "";
 		}
 
 		protected function ValidateAttributeValue($name, $value): bool {
@@ -41,23 +53,65 @@
 		}
 
 		/************************************ ArrayAccess Methods ************************************/
+		
+	
+		public function rewind(): void {
+			$this->iteratorPosition = 0;
+		}
+	
+		#[\ReturnTypeWillChange]
+		public function current() {
+			return $this->attributes[array_keys($this->attributes)[$this->iteratorPosition]];
+		}
+	
+		#[\ReturnTypeWillChange]
+		public function key() {
+			return array_keys($this->attributes)[$this->iteratorPosition];			
+		}
+	
+		public function next(): void {
+			++$this->iteratorPosition;
+		}
+	
+		public function valid(): bool {
+			return ($this->iteratorPosition <= count($this->attributes));			
+		}
 
-		public function offsetExists(mixed $offset): bool { 
+		/************************************ ArrayAccess Methods ************************************/
+
+		#[\ReturnTypeWillChange]
+		public function offsetExists($offset): bool {
 			return array_key_exists($offset, $this->attributes);
 		}
 
-		public function offsetGet(mixed $offset): mixed { 
+		#[\ReturnTypeWillChange]
+		public function offsetGet($offset) { 
+			if (!isset($this->attributes[$offset])) {
+				$this->errorHandler->RegisterError("attribute '$offset' is not set");
+
+				return null;
+			}
+
 			return $this->attributes[$offset];
 		}
 
-		public function offsetSet($offset, $value): void { 
-			if (!$this->ValidateAttributeValue($offset, $value))
-				$this->errorHandler->RegisterError("Invalid attribute value for $offset");
-			else
-				$this->attributes[$offset] = $value;
+		#[\ReturnTypeWillChange]
+		public function offsetSet($offset, $value): void {
+			if (!$this->VerifyAttributeName($offset)) {
+				$this->errorHandler->RegisterError("Invalid attribute name '" . print_r($offset) . "'");
+				return;
+			}
+
+			if (!$this->ValidateAttributeValue($offset, $value)) {
+				$this->errorHandler->RegisterError("Invalid attribute value for name '$offset'");
+				return;
+			}
+
+			$this->attributes[$offset] = $value;
 		}
 
-		public function offsetUnset(mixed $offset): void { 
+		#[\ReturnTypeWillChange]
+		public function offsetUnset($offset): void { 
 			if (!isset($this->attributes[$offset]))
 				$this->errorHandler->RegisterError("attribute '$offset' is not set");
 			else
@@ -78,15 +132,7 @@
 			return $this->version;
 		}
 
-		/************************************ PROTECTED VERIFIES ************************************/
-
-		protected function VerifyCoreName(string $name) : bool {
-			return trim($name) != "";
-		}
-
-		protected function VerifyAttributeName(string $name) : bool {
-			return trim($name) != "";
-		}
+		
 
 		/************************************ PROTECTED CALLBACKS ************************************/
 
@@ -115,62 +161,13 @@
 
 		/************************************ ATTRIBUTES ************************************/		
 
-		public function RegisterAttribute(string $name, $defaultValue) : bool {
-			if (!$this->VerifyAttributeName($name = trim($name)))
-				$this->errorHandler->RegisterError("Invalid Attribute Name '$name'", ErrorHandler::TYPE_ERROR);					
-
-			if (array_key_exists($name, $this->attributes))
-				$this->errorHandler->RegisterError("Attribute with name '$name' already exists", ErrorHandler::TYPE_WARNING);
-
-			$this->attributes[$name] = $defaultValue;
-
-			return true;
-		}
-
-		public function UnregisterAttribute(string $name): bool {
-			if (array_key_exists($name, $this->attributes))
-				$this->errorHandler->RegisterError("Attribute with name '$name' does not exist", ErrorHandler::TYPE_WARNING);
-
-			unset($this->attributes[$name]);
-
-			return true;
-		}
-
-		public function AttributeExists(string $name) : bool {
-			return array_key_exists($name, $this->attributes);
-		}
-
-		public function SetAttributeValue(string $name, $value) : bool {
-			if (!array_key_exists($name, $this->attributes)) {
-				$this->errorHandler->RegisterError("Attribute with name '$name' does not exist", ErrorHandler::TYPE_WARNING);					
-
-				return $this->RegisterAttribute($name, $value);					
-			} else {
-				if (!is_null($this->attributes[$name])) {
-					if (gettype($value) != gettype($this->attributes[$name]))
-						$this->errorHandler->RegisterError("Attribute '$name' set value mismatch.  old: " . gettype($this->attributes[$name]) . ", new: " . gettype($value), ErrorHandler::TYPE_WARNING);
-				}
-			}
-
-			$this->attributes[$name] = $value;
-
-			return true;
-		}
-
 		public function SetAttributeValues(array $values) : bool {
 			foreach ($values as $name => $value) {
-				if ($this->AttributeExists($name))
-					$this->SetAttributeValue($name, $value);
+				if (isset($this[$name]))
+					$this[$name] = $value;				
 			}
 
 			return true;
-		}
-
-		public function GetAttributeValue(string $name) {
-			if (!array_key_exists($name, $this->attributes))
-				$this->errorHandler->RegisterError("Attribute with name '$name' does not exist", ErrorHandler::TYPE_WARNING);
-
-			return $this->attributes[$name];
 		}
 
 		public function GetAttributes() : array {
