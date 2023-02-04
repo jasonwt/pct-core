@@ -10,6 +10,12 @@
 	use pct\core\extensions\IExtension;
 	
 	interface IComponent extends ICore {
+
+		public function ValidateComponentValue(string $name, $value) : bool;
+		public function ValidateAttributeValue(string $name, $value) : bool;
+		
+		public function __set($name, $value);
+		public function &__get($name);
 		public function SetValue($value) : bool;
 		public function GetValue();
 

@@ -6,9 +6,10 @@
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 
+	use ArrayAccess;
 	use pct\core\components\IComponent;
 
-	interface ICore {
+	interface ICore extends ArrayAccess {
 
 		/************************************ GET PROPERTIES ************************************/
 
