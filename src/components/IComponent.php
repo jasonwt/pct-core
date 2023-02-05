@@ -12,6 +12,8 @@
 	interface IComponent extends ICore {
 		public function __set($name, $value);
 		public function &__get($name);
+		public function __isset($name);
+
 		public function SetValue($value) : bool;
 		public function GetValue();
 
@@ -24,15 +26,7 @@
 		 */
 		public function RegisterComponent($component) : bool;
 		public function UnregisterComponent(string $name): bool;
-		public function ComponentExists(string $name) : bool;
-		public function GetComponentValue(string $name);
-		public function SetComponentValue(string $name, $value) : bool;
 		public function GetComponent(string $name) : ?IComponent;
-		/**
-		 * 
-		 * @param array|string $derivedFrom 
-		 * @return array 
-		 */
 		public function GetComponents(string $derivedFrom = "") : ?array;
 
 		/************************************ EXTENSIONS ************************************/		

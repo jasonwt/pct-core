@@ -6,6 +6,7 @@
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 
+	use pct\core\components\IComponent;
 	use pct\core\errorhandlers\IErrorHandler;
 	use pct\core\extensions\htmltagrenderer\HTMLTagRenderer;
 	use pct\core\extensions\htmltagrenderer\IHTMLTagRenderer;
@@ -35,7 +36,7 @@
 			parent::__construct("HTMLTagRenderer", $attributes, $errorHandler);
 		}
 
-		public function SetTagAttributeValue(string $tagAttributeName, $tagAttributeValue): bool {
+		public function SetTagAttributeValue(string $tagAttributeName, $tagAttributeValue): ?IComponent {
 			if (($tagAttributeName = trim($tagAttributeName)) == "type")
 				throw new \Exception("Can not change Input Tag Type.");
 

@@ -11,13 +11,29 @@
 	use pct\core\extensions\htmltagrenderer\IHTMLTagRenderer;
 
 	class InputCheckboxTagRenderer extends InputTagRenderer implements IHTMLTagRenderer {
-		public function __construct(array $attributes = [], ?IErrorHandler $errorHandler = null) {
+		protected $checkboxValue = "";
+
+		public function __construct(string $checkboxValue, array $attributes = [], ?IErrorHandler $errorHandler = null) {
+			if (($this->checkboxValue = trim($checkboxValue)) == "")
+				throw new \Exception("Invalid checkbox value");
+
 			$this->validTagAttributes += [
 				"checked" => false,
 				"required" => false
 			];
 
 			parent::__construct("checkbox", $attributes, $errorHandler);
+		}
+
+		protected function GetTagAttributesArray() : array {
+			if ($this->GetParent()->GetValue() == $this->checkboxValue)
+				$this["checked"] = true;
+				
+			$tagAttributesArray = parent::GetTagAttributesArray();
+
+			$tagAttributesArray["value"] = "value=\"" . $this->checkboxValue . "\"";
+
+			return $tagAttributesArray;
 		}
 	}
 ?>

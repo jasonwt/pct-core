@@ -15,7 +15,20 @@
 	use pct\core\extensions\databaselink\mysqllink\MysqlDatabaseLink;
 	use pct\core\extensions\databasetables\DatabaseTables;
 	use pct\core\extensions\htmltagrenderer\IHTMLTagRenderer;
-use pct\core\extensions\htmltagrenderer\tags\SelectTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\input\InputCheckboxTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\input\InputEmailTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\input\InputHiddenTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\input\InputNumberTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\input\InputRadioTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\input\InputTelTagRenderer;
+	use pct\core\extensions\htmltagrenderer\tags\SelectTagRenderer;
+	use pct\core\extensions\validator\value\pattern\EmailAddressValidator;
+
+	use function pct\core\includes\arrays\GetDaysArray;
+	use function pct\core\includes\arrays\GetMonthsArray;
+	use function pct\core\includes\arrays\GetUSStatesArray;
+	use function pct\core\includes\arrays\GetYearsArray;
+
 
 	use function pct\core\debugging\DebugPrint;
 
@@ -25,40 +38,83 @@ use pct\core\extensions\htmltagrenderer\tags\SelectTagRenderer;
 		public function __construct(string $name, array $attributes = [], $components = null, $extensions = null, ?ErrorHandler $errorHandler = null) {
 			parent::__construct($name, null, $attributes, $components, $extensions, $errorHandler);
 
-			$this->SetComponentValue("hunters_firstname", "Jason Thompson");
-	
-			$this->GetComponent("hunters_firstname")->RegisterExtension(new SelectTagRenderer(
-				[
-					"optgroup1" => [
-						"group1 name1" => "group1 value1",
-						"group1 name2" => "group1 value2",
-						"group1 name3" => "group1 value3"
-					],
-					"optgroup2" => [
-						"group2 name1" => "group2 value1",
-						"group2 name2" => "group2 value2",
-						"group2 name3" => "group2 value3"
-					]
-				],
-				[
-					"multiple" => true
-				]
-			));
-//			foreach ($this->GetComponents() as $componentName => $component) {
-//				$this->AddValueAlias($componentName, $componentName);
-//				$this->AddValueAlias($componentName, $componentName . "_1");
-//				$component->RegisterExtension(new InputTextTagRenderer());
-//			}
-				
+			$this->RegisterComponent(
+				"currentPage",
+				// Page 1
+				"dobMonth", "dobDay", "dobYear",
+				// Page 2
+				"heightFeet", "heightInches",
+				// Page3
+				"startmonth", "startday", "startyear", "cctype", "ccnumber", "ccmonth", "ccyear", "ccccv", "b_address", "b_city", "b_state", "b_zipcode"
+			);
 
-			//$this->GetComponent("hunters_firstname")->RegisterExtension(new InputTextTagRenderer());
+			$this->SetComponentTagRenderer(new InputHiddenTagRenderer(), "currentPage");
+
+			$this->SetComponentTagRenderer(new InputTextTagRenderer(), 
+				"hunters_firstname", "hunters_lastname", "hunters_address", "hunters_city", "b_address", "b_city"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "Gender", "F" => "Female", "M" => "Male"]), 
+				"hunters_gender"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "State"] + array_combine(GetUSStatesArray(true), GetUSStatesArray(false))), 
+				"hunters_state", "b_state"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "Month"] + GetMonthsArray(false)), 
+				"dobMonth", "startmonth", "ccmonth"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "Day"] + GetDaysArray(30)), 
+				"dobDay", "startday"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["1" => "Season Permit", "2" => "3 Consecutive Day Permit"]), 
+				"permits_type"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				GetYearsArray(date("Y")-(date("m")<4?1:0), date("Y")+(date("m")<4?1:2))), 
+				"permits_permit_year"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "Year"] + GetYearsArray(date("Y"), date("Y")-100)), 
+				"dobYear", "startyear"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "Select One", "001" => "Visa", "002" => "Mastercard"]), 
+				"cctype"
+			);
+			$this->SetComponentTagRenderer(new SelectTagRenderer(
+				["" => "Exp Year"] + GetYearsArray(date("Y"), date("Y")+8)), 
+				"ccyear"
+			);
+			$this->SetComponentTagRenderer(new InputNumberTagRenderer(), 
+				"ccnumber", "ccccv", "b_zipcode", "hunters_zipcode", "hunters_weight"
+			);
+			$this->SetComponentTagRenderer(new InputEmailTagRenderer(), 
+				"hunters_email"
+			);
+			$this->SetComponentTagRenderer(new InputTelTagRenderer(), 
+				"hunters_phone"
+			);
+
+			$this->SetComponentValues([
+				"permit_purchase_date" => time(),
+				"permits_issue" => "new",
+				"permits_new" => 1,
+				"startmonth" => "4",
+				"startday" => "1",
+				"startyear" => (string) ((int) date("Y") - (date("m") < 4 ? 1 : 0))
+			]);
+			
 		}
 	}
 
 	$testComponent = new TestComponent("TestHTMLRenderer", [], null,
 		[
 			new MysqlDatabaseLink($dbLink), 
-			new DatabaseTables("hunters"),
+			new DatabaseTables("hunters, permits"),
 			new FormTagRenderer(),
 			new ValueAliases()
 		]
@@ -67,20 +123,21 @@ use pct\core\extensions\htmltagrenderer\tags\SelectTagRenderer;
 	//$testComponent->AddValueAlias("hunters_firstname", "Hunters Firstname");
 	//DebugPrint("GetValueAlias: ", $testComponent->GetValueAlias("hunters_firstname"));
 	//DebugPrint("GetAliasValue: ", $testComponent->GetAliasValue("Hunters Firstname"));
-	
-	$testComponent->SetComponentValue("hunters_firstname", ["one" => 1, "two" => 2]);
 
-//	DebugPrint($testComponent);
+	//$testComponent->hunters_firstname = ["one" => 1, "two" => 2];	
 
-//	$testComponent->RenderHTML();
+	DebugPrint($testComponent);
 
+	$testComponent->RenderHTML();
+
+/*	
 	echo $testComponent->hunters_firstname["one"] . "\n";
 	$testComponent->hunters_firstname["one"] = "100";
 	echo $testComponent->hunters_firstname["one"] . "\n";
 	echo "lastname: " . $testComponent->hunters_lastname . "\n";
 	$testComponent->hunters_lastname = "lastname";
 	echo "lastname: " . $testComponent->hunters_lastname . "\n";
-	
+*/	
 	//$tmp= "Aasdf";
 
 

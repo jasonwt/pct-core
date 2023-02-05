@@ -6,7 +6,9 @@
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 
-	use pct\core\extensions\Extension;
+use pct\core\components\Component;
+use pct\core\components\IComponent;
+use pct\core\extensions\Extension;
 	use pct\core\errorhandlers\IErrorHandler;
 	use pct\core\extensions\htmltagrenderer\IHTMLTagRenderer;
 
@@ -74,8 +76,16 @@
 			return $tagAttributesArray;
 		}
 		
+		public function SetTagAttributes(array $tagAttributes) : ?IComponent {
+			foreach ($tagAttributes as $attributeName => $attributeValue)
+				if (is_null($this->GetParent()->SetTagAttributeValue($attributeName, $attributeValue)))
+					return null;
+			
 
-		public function SetTagAttributeValue(string $tagAttributeName, $tagAttributeValue): bool {
+			return $this->GetParent();
+		}
+
+		public function SetTagAttributeValue(string $tagAttributeName, $tagAttributeValue): ?IComponent {
 			$attributeValueType = gettype($tagAttributeValue);
 			$validTagAttributeType = gettype($this->validTagAttributes[$tagAttributeName]);
 			
@@ -90,7 +100,7 @@
 
 			$this[$tagAttributeName] = $tagAttributeValue;
 
-			return true;			
+			return $this->GetParent();			
 		}
 
 		public function RenderClosingTag() {			

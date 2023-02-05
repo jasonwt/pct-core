@@ -52,15 +52,14 @@
 			return true;
 		}
 
-		/************************************ ArrayAccess Methods ************************************/
+		/************************************ Iterator Methods ************************************/
 		
-	
 		public function rewind(): void {
 			$this->iteratorPosition = 0;
 		}
 	
 		#[\ReturnTypeWillChange]
-		public function current() {
+		public function &current() {
 			return $this->attributes[array_keys($this->attributes)[$this->iteratorPosition]];
 		}
 	
@@ -131,8 +130,6 @@
 		public function GetVersion() : string {
 			return $this->version;
 		}
-
-		
 
 		/************************************ PROTECTED CALLBACKS ************************************/
 

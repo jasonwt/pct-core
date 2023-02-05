@@ -1,5 +1,4 @@
 <?php	
-// https://stitcher.io/blog/dealing-with-deprecations
     declare(strict_types=1);
 
 	namespace pct\core\components;
@@ -7,14 +6,11 @@
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 
-	
-
 	use pct\core\Core;
 	use pct\core\components\IComponent;
 	use pct\core\extensions\IExtension;
 	use pct\core\errorhandlers\IErrorHandler;
 
-	
 	class Component extends Core implements IComponent {
 		protected $value = null;
 
@@ -43,9 +39,7 @@
 			}
 		}
 
-		
-
-		protected function ValidateComponentValue(string $name, $value): bool {
+		protected function ValidateComponentValue($value, $name = ""): bool {
 			return true;
 		}
 
@@ -57,15 +51,18 @@
 				return null;
 			}
 
+			if (!$this->ValidateComponentValue($value, $name)) {
+				$this->errorHandler->RegisterError("Invalid Component value for '$name'.");
+				return null;
+			}
+
 			return $this->components[$name]->SetValue($value);
 		}
 
 		public function &__get($name) {
-			echo "calling_get\n";
 			if (!isset($this->components[$name])) {
-				$n = null;
 				$this->errorHandler->RegisterError("Component '$name' does not exist.");
-				return $n;
+				return ($n = null);
 			}
 
 			return $this->components[$name]->value;
@@ -80,6 +77,11 @@
 		}
 
 		public function SetValue($value) : bool {
+			if (!$this->ValidateComponentValue($value)) {
+				$this->errorHandler->RegisterError("Invalid Component value.");
+				return null;
+			}
+
 			$this->value = $value;
 			return true;
 		}
@@ -118,30 +120,8 @@
 				$this->errorHandler->RegisterError("Component with name '$name' does not exist", IErrorHandler::TYPE_WARNING);
 
 			$component = $this->components[$name];
-
 			unset($this->components[$name]);
-
 			$component->UnregisterCallback();
-
-			return true;
-		}
-
-		public function ComponentExists(string $name) : bool {
-			return isset($this->components[$name]);			
-		}
-
-		public function GetComponentValue(string $name) {
-			if (!array_key_exists($name, $this->components))
-				$this->errorHandler->RegisterError("Component with name '$name' does not exist", IErrorHandler::TYPE_WARNING);
-
-			return $this->components[$name]->GetValue();			
-		}
-
-		public function SetComponentValue(string $name, $value) : bool {
-			if (!array_key_exists($name, $this->components))
-				$this->errorHandler->RegisterError("Component with name '$name' does not exist", IErrorHandler::TYPE_WARNING);
-
-			$this->components[$name]->SetValue($value);
 
 			return true;
 		}
@@ -215,9 +195,7 @@
 				$this->errorHandler->RegisterError("Extension with name '$name' does not exist", IErrorHandler::TYPE_WARNING);
 
 			$extension = $this->extensions[$name];
-
 			unset($this->extensions[$name]);
-
 			$extension->UnregisterCallback();
 
 			return true;
@@ -250,7 +228,7 @@
 					continue;
 
 				$returnValue += array_filter($this->extensions, function ($v, $k) use ($derivedFrom) {
-					return is_a($v, $derivedFrom);
+					return ($derivedFrom == "" ? true : is_a($v, $derivedFrom));
 				}, ARRAY_FILTER_USE_BOTH);				
 			}
 			

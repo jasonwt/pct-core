@@ -8,7 +8,9 @@
 			"pct\\core\\": "src/"
 		},
 		"files": [
-			"src/debugging/debugging.php"
+			"src/debugging/debugging.inc.php",
+			"src/includes/arrays/locale.inc.php",
+			"src/includes/arrays/datetime.inc.php"
 		]
 	},
 	"authors": [

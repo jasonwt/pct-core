@@ -31,7 +31,7 @@
 		}
 
 		public function RenderOpeningTag() {
-			echo "<textarea " . implode(" ", $this->GetTagAttributesArray()) . ">";
+			echo "<textarea " . implode(" ", $this->GetTagAttributesArray()) . ">" . $this->GetParent()->GetValue();
 		}
 
 		public function RenderClosingTag() {
